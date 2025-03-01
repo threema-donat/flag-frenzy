@@ -14,18 +14,17 @@ pub fn check_with_features(
     storage: &FeatureStorage,
 ) -> anyhow::Result<ExitStatus> {
     // Create comma-separated list of features.
-    let features =
-        features
-            .iter()
-            // Convert `FeatureKey`s to `&str`, skipping keys that don't exist.
-            .filter_map(|key| storage.get(*key))
-            // Concatenate all strings together, with a `,` separating them. This will result in an
-            // extra comma at the end, but Cargo still accepts this.
-            .fold(String::new(), |mut acc, f| {
-                acc.push_str(f);
-                acc.push(',');
-                acc
-            });
+    let features = features
+        .iter()
+        // Convert `FeatureKey`s to `&str`, skipping keys that don't exist.
+        .filter_map(|key| storage.get(*key))
+        // Concatenate all strings together, with a `,` separating them. This will result in an
+        // extra comma at the end, but Cargo still accepts this.
+        .fold(String::new(), |mut acc, f| {
+            acc.push_str(f);
+            acc.push(',');
+            acc
+        });
 
     Command::new("cargo")
         .arg("check")
@@ -35,6 +34,7 @@ pub fn check_with_features(
         .args(["--features", &features])
         .arg("--quiet")
         .args(["--message-format", "short"])
+        .env("RUSTFLAGS", "-D warnings")
         .status()
         .context("Failed to spawn `cargo-check`.")
 }
