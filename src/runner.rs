@@ -12,6 +12,7 @@ pub fn check_with_features(
     manifest_path: &Path,
     features: &[FeatureKey],
     storage: &FeatureStorage,
+    rust_flags: &str,
 ) -> anyhow::Result<ExitStatus> {
     // Create comma-separated list of features.
     let features = features
@@ -34,7 +35,7 @@ pub fn check_with_features(
         .args(["--features", &features])
         .arg("--quiet")
         .args(["--message-format", "short"])
-        .env("RUSTFLAGS", "-D warnings")
+        .env("RUSTFLAGS", rust_flags)
         .status()
         .context("Failed to spawn `cargo-check`.")
 }

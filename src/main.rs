@@ -16,7 +16,7 @@ use config::{load_config, WorkspaceConfig};
 use intern::intern_features;
 use manifest::{load_manifest, Manifest, Package};
 use runner::check_with_features;
-use std::path::Path;
+use std::{env, path::Path};
 
 fn main() -> anyhow::Result<()> {
     let cli = CLI::from_env().context("Failed to verify CLI flags.")?;
@@ -49,6 +49,8 @@ fn main() -> anyhow::Result<()> {
         process_packages(manifest, &cli, &config).context("Failure while processing packages.")?;
 
     let mut failures = Vec::new();
+
+    let rust_flags = env::var("RUSTFLAGS").unwrap_or_else(|_| "-D warnings".to_string());
 
     for package in packages {
         let Package { name, features } = package;
@@ -85,7 +87,7 @@ fn main() -> anyhow::Result<()> {
             if cli.dry_run {
                 continue;
             }
-            let status = check_with_features(&name, &cli.manifest_path, &combo, &storage)
+            let status = check_with_features(&name, &cli.manifest_path, &combo, &storage, &rust_flags)
                 .with_context(|| format!("Tried checking package {name}."))?;
 
             if !status.success() {
